@@ -37,11 +37,17 @@ public class PriorityQueue {
 	}
 
 	public PQItem pop() {
-		PQItem pqItem = _pq.pollFirstEntry().getValue();
+		PQItem pqItem;
+		try {
+			pqItem = _pq.pollFirstEntry().getValue();
+		} catch (NullPointerException ex) {
+			return null;
+		}
 
 		@SuppressWarnings("UnstableApiUsage")
 		ListenableScheduledFuture<PQItem> future = _commitTimeoutExecutorService.schedule(() -> {
 			_pq.putIfAbsent(pqItem.getKey(), pqItem);
+			System.out.println("Aborted! " + pqItem);
 			return pqItem;
 		}, Constants.PQ_COMMIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
 
