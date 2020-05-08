@@ -53,6 +53,13 @@ class BasePriorityQueue:
         del self.map[key]
         return key[0]
 
+    def pop_from_q(self, q_idx):
+        q = self.get_queue(q_idx)
+        key, v = q.popitem()
+        self.queue_sum[q_idx] -= key[0]
+        del self.map[key]
+        return key[0]
+
     # Public BACKGROUND function (for gossip)
     def background(self):
         pass
