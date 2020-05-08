@@ -15,10 +15,11 @@ class RequestType(Enum):
 
 class TestRunnerV2:
 
-    def __init__(self, queue, consumer_lag, num_iterations):
+    def __init__(self, queue, consumer_lag, num_iterations, num_concurrent_pops):
         self.pq = queue # Priority Queue
         self.consumer_lag = consumer_lag
         self.num_iterations = num_iterations
+        self.num_concurrent_pops = num_concurrent_pops
 
     def run(self):
         for i in range(self.consumer_lag):
@@ -28,8 +29,7 @@ class TestRunnerV2:
         # Add enough to prevent queue from getting empty
         for iteration in range(1, self.num_iterations):
             self.pq.add(random.random())
-        ops = self.generate_traffic(self.num_iterations, 1)
-        print("DEBUG ops_length={}".format(len(ops)))
+        ops = self.generate_traffic(self.num_iterations, self.num_concurrent_pops)
         result = {}
         # op = (id, type)
         for op in ops:
@@ -60,8 +60,27 @@ class TestRunnerV2:
         # each pop consists of self.pq.num_queues_lb_pop pq peek operation, followed by a pop
         # each add consists of 1 pq add operation
         ret = []
+        ops = []
         for i in range(num_pop):
+            ops.append([])
             for j in range(self.pq.num_queues_lb_pop):
-                ret.append((i, RequestType.PEEK))
-            ret.append((i, RequestType.POP))
+                ops[i].append((i, RequestType.PEEK))
+            ops[i].append((i, RequestType.POP))
+        num_ops_per_pop = len(ops[0])
+        for i in range(len(ops) * num_ops_per_pop):
+            concurrent_batch = i // (num_ops_per_pop * num_concurrent)
+            idx_in_batch = i % (num_ops_per_pop * num_concurrent)
+
+            pop_idx = concurrent_batch * num_concurrent + idx_in_batch % num_concurrent
+            op_idx =  idx_in_batch // num_concurrent
+            ret.append(ops[pop_idx][op_idx])
         return ret
+    #def generate_traffic(self, num_pop, num_concurrent):
+    #    # each pop consists of self.pq.num_queues_lb_pop pq peek operation, followed by a pop
+    #    # each add consists of 1 pq add operation
+    #    ret = []
+    #    for i in range(num_pop):
+    #        for j in range(self.pq.num_queues_lb_pop):
+    #            ret.append((i, RequestType.PEEK))
+    #        ret.append((i, RequestType.POP))
+    #    return ret
