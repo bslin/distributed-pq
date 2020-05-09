@@ -8,6 +8,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.stereotype.Component;
@@ -36,7 +37,8 @@ class AddPQItemThread implements DisposableBean, Runnable {
                 for (ConsumerRecord<String, PQItem> record : consumerRecords) {
                     System.out.println(String.format("Got Message! %s, %s, %s", record.key(), record.value(), record.offset()));
                     pq.add(record.value());
-                    SingletonInstances.ADD_PQ_ITEM_CONSUMER_OFFSET.set(record.offset());
+                    // Add one to indicate that we are done with the current offset (so on restart we go to the next offset)
+                    SingletonInstances.ADD_PQ_ITEM_CONSUMER_OFFSET.set(record.offset() + 1);
                 }
 
             }
@@ -60,7 +62,6 @@ class AddPQItemThread implements DisposableBean, Runnable {
     private static Consumer<String, PQItem> createConsumer() {
         Properties props = new Properties();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, Constants.ADD_PQ_ITEM_BOOTSTRAP_SERVERS);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, Constants.ADD_PQ_ITEM_CONSUMER_GROUP);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, PQItemDeserializer.class.getName());
 
@@ -69,8 +70,11 @@ class AddPQItemThread implements DisposableBean, Runnable {
 
         // Subscribe to the topic.
         String topic = SingletonInstances.getAddPQItemTopic();
-        System.out.println("ADD PQ Item Topic: " + topic);
-        consumer.subscribe(Collections.singletonList(topic));
+        long offset = SingletonInstances.ADD_PQ_ITEM_CONSUMER_OFFSET.get();
+        System.out.println(String.format("ADD PQ Item Topic: %s, offset: %s", topic, offset));
+        TopicPartition topicPartition = new TopicPartition(topic, 0);
+        consumer.assign(Collections.singleton(topicPartition));
+        consumer.seek(topicPartition, offset);
         return consumer;
     }
 

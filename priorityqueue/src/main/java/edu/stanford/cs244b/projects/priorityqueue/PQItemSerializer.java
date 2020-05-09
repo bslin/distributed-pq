@@ -14,11 +14,8 @@ public class PQItemSerializer implements Serializer<PQItem> {
       ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
       DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
 
-      dataOutputStream.writeLong(data.getKey().getPriority());
-      dataOutputStream.writeLong(data.getKey().getUuid().getLeastSignificantBits());
-      dataOutputStream.writeLong(data.getKey().getUuid().getMostSignificantBits());
-      outputStream.write(data.getMessage());
-
+      PQItem.write(data, dataOutputStream);
+      dataOutputStream.flush();
       return outputStream.toByteArray();
     } catch (IOException ex) {
       throw new RuntimeException(ex);

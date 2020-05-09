@@ -10,6 +10,7 @@ public class PriorityQueueApplication {
 		System.out.println("Instance Number: " + args[0]);
 		SingletonInstances.INSTANCE_NUMBER.set(Integer.parseInt(args[0]));
 		SingletonInstances.NUM_INSTANCES.set(Integer.parseInt(args[1]));
+		SnapshotUtils.loadSnapshot(SingletonInstances.PRIORITY_QUEUE);
 		SpringApplication.run(PriorityQueueApplication.class, args);
 	}
 }
