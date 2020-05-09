@@ -57,6 +57,10 @@ public class PriorityQueue {
 		return pqItem;
 	}
 
+	public PQItem peek() {
+		return _pq.firstEntry().getValue();
+	}
+
 	public void commit(PQKey pqKey) {
 		ScheduledFuture<PQItem> future = _revertTasks.remove(pqKey);
 

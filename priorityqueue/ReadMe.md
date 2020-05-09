@@ -34,6 +34,11 @@ Pop:
 curl -w '\n'  -X POST "http://localhost:8080/pop"
 ```
 
+Peek:
+```
+curl -w '\n'  -X POST "http://localhost:8080/peek"
+```
+
 commit:
 ```
 curl -w '\n'  -X POST "http://localhost:8080/commit" --data 'priority=1&uuid=d4a0d380-a594-4e85-b6b3-936e9ccc0730'

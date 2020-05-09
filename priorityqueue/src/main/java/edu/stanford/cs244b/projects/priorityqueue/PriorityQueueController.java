@@ -25,6 +25,11 @@ public class PriorityQueueController {
 		return _pq.pop();
 	}
 
+	@RequestMapping(value = "/peek", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+	public PQItem peek() {
+		return _pq.peek();
+	}
+
 	@RequestMapping(value = "/commit", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
 	public PQKey commit(
 			@RequestParam(value = "priority") long priority,
