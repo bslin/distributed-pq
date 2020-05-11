@@ -53,6 +53,9 @@ class BasePriorityQueue:
         del self.map[key]
         return key[0]
 
+    def is_queue_empty(self, q_idx):
+        return len(self.get_queue(q_idx)) == 0
+
     def pop_from_q(self, q_idx):
         q = self.get_queue(q_idx)
         key, v = q.popitem()
@@ -66,7 +69,7 @@ class BasePriorityQueue:
 
     # Public (For testing) get the position of a key
     def position(self, k):
-        return self.map.keys().bisect_left((k, ''))
+        return self.map.keys().bisect_left((k, uuid.uuid4()))
 
     def add_to_queue(self, q_idx, k):
         key = (k, uuid.uuid4())
