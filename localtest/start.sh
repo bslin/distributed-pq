@@ -1,6 +1,6 @@
 #!/bin/bash
 PORT=8080
-NUM=10
+NUM=$1
 NUM_1=$((NUM -1))
 for i in $(seq 0 $NUM_1)
 do
