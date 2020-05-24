@@ -4,6 +4,8 @@ import com.google.common.util.concurrent.ListenableScheduledFuture;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
@@ -58,7 +60,7 @@ public class PriorityQueue {
 	}
 
 	public PQItem peek() {
-		return _pq.firstEntry().getValue();
+		return Optional.ofNullable(_pq.firstEntry()).map(Map.Entry::getValue).orElse(null);
 	}
 
 	public void commit(PQKey pqKey) {

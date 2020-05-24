@@ -71,4 +71,18 @@ public class PriorityQueueController {
 		return ret;
 	}
 
+	@RequestMapping(value = "/popAll", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+	public long popAll() {
+		PQItem poppedItem;
+		long count = 0;
+		do {
+			poppedItem = _pq.pop();
+			if (poppedItem != null) {
+				_pq.commit(poppedItem.getKey());
+				count += 1;
+			}
+		} while (poppedItem != null);
+		return count;
+	}
+
 }
