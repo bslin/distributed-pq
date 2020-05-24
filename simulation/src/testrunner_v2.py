@@ -12,9 +12,13 @@ class RequestType(Enum):
     POP = 1
     ADD = 2
 
+class PopPolicy(Enum):
+    BASIC = 0
+    TOP_TWO = 1
+
 class TestRunnerV2:
 
-    def __init__(self, queue, initial_item_count, num_pops, num_concurrent_pops, debug=True):
+    def __init__(self, queue, initial_item_count, num_pops, num_concurrent_pops, debug=True, pop_policy=PopPolicy.BASIC):
         if (num_pops > initial_item_count):
             raise Exception("num_pops is greater than initial_item_count.")
 
@@ -22,7 +26,9 @@ class TestRunnerV2:
         self.initial_item_count = initial_item_count
         self.num_pops = num_pops
         self.num_concurrent_pops = num_concurrent_pops
-        self.debug = True
+        self.debug = debug
+        # 0 for default policy
+        self.pop_policy = pop_policy
 
     def run(self):
         for i in range(self.initial_item_count):
@@ -40,15 +46,34 @@ class TestRunnerV2:
                 else:
                     result[op[0]] = [(q_key, q_idx)]
             if op[1] == RequestType.POP:
-                best = min(result[op[0]], key=lambda q : q[0]) #(q_key, q_idx) with min q_key
-                best_q_idx = best[1]
-                if not self.pq.is_queue_empty(best_q_idx):
-                    value = self.pq.pop_from_q(best_q_idx)
-                    value_idx = self.pq.position(value)
-                    out.append(value_idx)
-                else:
-                    err += 1
-                del result[op[0]]
+                if self.pop_policy == PopPolicy.BASIC:
+                    best = min(result[op[0]], key=lambda q : q[0]) #(q_key, q_idx) with min q_key
+                    best_q_idx = best[1]
+                    if not self.pq.is_queue_empty(best_q_idx):
+                        value = self.pq.pop_from_q(best_q_idx)
+                        value_idx = self.pq.position(value)
+                        out.append(value_idx)
+                    else:
+                        err += 1
+                    del result[op[0]]
+                if self.pop_policy == PopPolicy.TOP_TWO:
+                    # try to get the top, if top is empty/no longer giving top values, try to get the second best
+                    best, second_best = self.get_top_two(result[op[0]]) #best = (priority, uuid)
+                    best_q_idx, second_best_q_idx = best[1], second_best[1]
+                    chosen_value, best_value = None, None
+                    if not self.pq.is_queue_empty(best_q_idx):
+                        best_value = self.pq.peek_from_q(best_q_idx)
+                        if best_value < second_best[0][0]:
+                            chosen_value = best_value
+                            self.pq.pop_from_q(best_q_idx) # peek-pop simulates a pop-commit op in the implementation
+                    if chosen_value == None and not self.pq.is_queue_empty(second_best_q_idx):
+                        chosen_value = self.pq.pop_from_q(second_best_q_idx)
+                    if chosen_value != None:
+                        value_idx = self.pq.position(chosen_value)
+                        out.append(value_idx)
+                    else:
+                        err += 1
+                    del result[op[0]]
             # Background
             self.pq.background()
 
@@ -88,3 +113,13 @@ class TestRunnerV2:
             data = sorted(data)
         idx = len(data) * percentile // 100 - 1
         return data[idx]
+
+    # take a list of (q_key, q_idx) and return the pair with lowest and second lowest q_key
+    def get_top_two(self, data):
+        lowest, second_lowest = None, None
+        for entry in data:
+            if lowest == None or entry[0] < lowest[0]:
+                lowest = entry
+            elif second_lowest == None or entry[0] < second_lowest[0]:
+                second_lowest = entry
+        return (lowest, second_lowest)
