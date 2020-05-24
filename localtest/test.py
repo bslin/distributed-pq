@@ -5,7 +5,7 @@ from client import PQClient
 from blist import sorteddict
 
 num_elements = 1000
-num_clients = 5
+num_clients = 100
 pqclient = PQClient()
 
 
