@@ -10,12 +10,13 @@ java -Dserver.port=8082 -jar target/priorityqueue-0.0.1.war 2 2
 """
 class PQClient:
 
-    def __init__(self, num_peeks=2, num_instances=10, host='localhost'):
+    def __init__(self, num_peeks=2, num_instances_per_host=10, hosts=['localhost']):
         self.pool = grequests.Pool(num_peeks)
         self.num_peeks = num_peeks
         self.base_urls = []
-        for i in range(num_instances):
-            self.base_urls.append(f'http://{host}:{8080+i}/')
+        for host in hosts:
+            for i in range(num_instances_per_host):
+                self.base_urls.append(f'http://{host}:{8080+i}/')
 
     def get_rand_url(self):
         return self.get_rand_urls(1)[0]

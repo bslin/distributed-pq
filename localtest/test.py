@@ -6,7 +6,7 @@ from blist import sorteddict
 
 num_elements = 1000
 num_clients = 128
-pqclient = PQClient(num_instances=10, num_peeks=2, host='192.168.0.9')
+pqclient = PQClient(num_instances_per_host=10, num_peeks=2, hosts=['192.168.0.9'])
 
 
 print("CLEARING")
