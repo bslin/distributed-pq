@@ -63,6 +63,11 @@ class BasePriorityQueue:
         del self.map[key]
         return key[0]
 
+    def peek_from_q(self, q_idx):
+        q = self.get_queue(q_idx)
+        key = q.keys()[0]
+        return key[0]
+
     # Public BACKGROUND function (for gossip)
     def background(self):
         pass
