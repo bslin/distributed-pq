@@ -1,12 +1,14 @@
 import multiprocessing
 import statistics
 import time
+import sys
+sys.path.append('../')
 from localtest.client import PQClient
 
 num_elements = 1000
 num_clients = 1
-#hosts = ['34.214.48.182', '54.185.251.31', '44.230.15.116', '54.212.105.110', '44.224.147.122']
-hosts = ['34.214.48.182']
+#hosts = ['172.31.15.144', '172.31.11.65', '172.31.3.128', '172.31.2.221', '172.31.11.164']
+hosts = ['172.31.15.144']
 pqclient = PQClient(num_instances_per_host=1, num_peeks=2, hosts=hosts)
 
 def add_worker(proc_num):
@@ -25,7 +27,7 @@ def pop_worker(proc_num):
             t = end_time - start_time
             results.append((proc_num, end_time - start_time, res))
             if len(results) % 100 == 0:
-                print(f'worker:{proc} result:{res} time:{t}')
+                print(f'worker:{proc_num} result:{res} time:{t}')
     return results
 
 def main():
@@ -37,7 +39,8 @@ def main():
     input(f'Added {num_elements} initial elements. Press any key to continue test...')
     pool = multiprocessing.Pool(processes = num_clients)
     raw_results = pool.map(pop_worker, range(num_clients))
-    print(f'Popped {len(raw_results)} elements' )
+    results = [item for sublist in raw_results for item in sublist]
+    print(f'Popped {len(results)} elements' )
 
 if __name__ == "__main__":
     main()
