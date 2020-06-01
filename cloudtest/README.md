@@ -1,4 +1,5 @@
 # VM Specs
+t3.xlarge VMs (4 vCPU, 16 GiB memory each) with Ubuntu bionic 18.04
 
 # Commands
 1. VM setup
@@ -49,5 +50,5 @@
         ```
     1. After doing the above two steps for all VMs involved, shut down zookeeper
         ```bash
-         ~/cs244b/kafka_2.12-2.5.0/bin/zookeeper-server-stop.sh
+        ~/cs244b/kafka_2.12-2.5.0/bin/zookeeper-server-stop.sh
         ```
