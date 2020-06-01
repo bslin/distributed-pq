@@ -16,6 +16,7 @@ args = parser.parse_args()
 
 num_elements = args.num_elements
 num_clients = args.num_clients
+# update this with the actual ips of VMs on which the system is deployed
 all_hosts = ['172.31.15.144', '172.31.11.65', '172.31.3.128', '172.31.2.221', '172.31.11.164']
 hosts = all_hosts[0:args.num_hosts]
 pqclient = PQClient(num_instances_per_host=1, num_peeks=2, hosts=hosts)
