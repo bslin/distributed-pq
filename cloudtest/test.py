@@ -12,6 +12,7 @@ parser.add_argument("--num_elements", help="number of elements to insert into th
 parser.add_argument("--num_clients", help="number of clients to simutaneously pop from the pq", default=1, type=int)
 parser.add_argument("--num_hosts", help="number of active pq hosts", default=1, type=int)
 parser.add_argument("--clean_up",help="whether to clean up the pq before starting the test", action="store_true")
+parser.add_argument("--fault_tolerant",help="whether to operate the client in fault tolerant mode", action="store_true")
 args = parser.parse_args()
 
 num_elements = args.num_elements
@@ -19,7 +20,7 @@ num_clients = args.num_clients
 # update this with the actual ips of VMs on which the system is deployed
 all_hosts = ['172.31.15.144', '172.31.11.65', '172.31.3.128', '172.31.2.221', '172.31.11.164']
 hosts = all_hosts[0:args.num_hosts]
-pqclient = PQClient(num_instances_per_host=1, num_peeks=2, hosts=hosts)
+pqclient = PQClient(num_instances_per_host=1, num_peeks=2, hosts=hosts, fault_tolerant=args.fault_tolerant)
 
 def add_worker(proc_num):
     pqclient.add(element=proc_num)
@@ -27,7 +28,8 @@ def add_worker(proc_num):
 def pop_worker(proc_num):
     results = []
     num_none = 0
-    while num_none < 1:
+    threshold = len(hosts) if args.fault_tolerant else 1
+    while num_none < threshold:
         start_time = time.perf_counter()
         res = pqclient.pop()
         end_time = time.perf_counter()
